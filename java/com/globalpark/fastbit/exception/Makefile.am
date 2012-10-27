@@ -1,0 +1,2 @@
+javadir=$(pkgdatadir)
+dist_java_JAVA=FastbitException.java FastbitTableException.java FastbitTablexException.java FastbitPartitionException.java FastbitCursorException.java 

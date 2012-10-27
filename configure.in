@@ -1,0 +1,97 @@
+AC_INIT(src/FastbitTable.cc)
+AM_INIT_AUTOMAKE([fastbit4java], [1.0.0])
+AC_SUBST(VERSION)
+ISODATE=`date +%Y-%m-%d`
+AC_SUBST(ISODATE)
+AC_CANONICAL_HOST
+AC_CONFIG_MACRO_DIR([m4])
+# Checks for programs.
+AC_PROG_CXX
+AC_PROG_INSTALL
+AC_LANG([C++])
+AC_PROG_LIBTOOL
+
+AC_ARG_WITH(fastbit,
+        AS_HELP_STRING([--with-fastbit=dir],[use dir as fastbit root directory]),
+        [
+                FASTBIT_DIR=$with_fastbit
+                LIBS="-L${FASTBIT_DIR}/lib"
+                AC_CHECK_LIB([fastbit],[main],
+                        [
+                        LIBFASTBIT="-L${FASTBIT_DIR}/LIB -lfastbit" 
+                        AC_SUBST(libfastbit,${LIBFASTBIT})
+                        AC_SUBST(fastbit_includes,"-I${FASTBIT_DIR}/include")
+                        AC_SUBST(fastbit_bin,"${FASTBIT_DIR}/bin")
+                        ],
+                        
+                        [AC_MSG_ERROR("Could not find fastbit in" $with_fastbit)])
+        ],
+        [AC_MSG_ERROR("Could not find fastbit")]
+)
+
+AC_ARG_WITH(java,
+        AS_HELP_STRING([--with-java=dir],[use dir as Java SDK root directory]),
+        [
+        JAVA_INCLUDES="-I${with_java}/include -I${with_java}/include/linux"
+        ],
+        [
+         if test ! "x$JAVA_HOME" = "x" -a -d "$JAVA_HOME"
+         then
+         case "$host_os" in
+           bsdi*)     JNI_SUBDIRS="bsdos";;
+           linux*)    JNI_SUBDIRS="linux genunix";;
+           osf*)      JNI_SUBDIRS="alpha";;
+           solaris*)  JNI_SUBDIRS="solaris";;
+           mingw*)    JNI_SUBDIRS="win32";;
+           cygwin*)   JNI_SUBDIRS="win32";;
+           *)         JNI_SUBDIRS="genunix";;
+         esac
+           for JINCSUBDIR in $JNI_SUBDIRS
+           do
+             if test -d "$JAVA_HOME/include/$JINCSUBDIR"; then
+             JNI_INCLUDES="$JNI_INCLUDE_DIRS -I$JAVA_HOME/include/$JINCSUBDIR"
+             fi
+           done
+         JAVA_INCLUDES="-I${JAVA_HOME}/include ${JNI_INCLUDES}"         
+         fi
+        ]
+)
+
+if test ! "x${JAVA_INCLUDES}"="X"; then
+   AC_MSG_ERROR("Could not find java")
+fi
+
+AC_SUBST(java_includes, ${JAVA_INCLUDES})
+
+AC_ARG_WITH(junit,
+        AS_HELP_STRING([--with-junit=jar],[use jar as path to junit.jar]),
+        [
+        AC_SUBST(junit, ${with_junit})
+        ],
+        [AC_MSG_WARN([Could not find junit, tests will not work])]
+)
+AC_SUBST(top_srcdir, ${top_srcdir})
+# Checks for header files.
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_INLINE
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_INT64_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
+
+# Checks for library functions.
+#AC_CHECK_FUNCS([select])
+
+AC_OUTPUT([Makefile
+        src/Makefile
+        java/Makefile
+        java/com/Makefile
+        java/com/globalpark/Makefile
+        java/com/globalpark/fastbit/Makefile
+        java/com/globalpark/fastbit/exception/Makefile
+        tests/Makefile])
+
